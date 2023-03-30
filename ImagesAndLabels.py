@@ -67,8 +67,8 @@ net = tf.keras.models.Sequential([
     tf.keras.layers.MaxPool2D((2, 2)),
     tf.keras.layers.Conv2D(10, 5, strides=5, padding='valid', activation='relu'),
     tf.keras.layers.Flatten(),
-    tf.keras.layers.Dense(50, activation = 'relu'),
-    tf.keras.layers.Dense(40, activation = 'relu'),
+    tf.keras.layers.Dense(50, activation='relu'),
+    tf.keras.layers.Dense(40, activation='relu'),
     tf.keras.layers.Dense(29, activation='softmax')])
 
 net.summary()
