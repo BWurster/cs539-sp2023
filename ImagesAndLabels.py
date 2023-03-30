@@ -7,7 +7,6 @@ from tensorflow import keras
 
 
 def rgb2gray(rgb):
-    # return np.dot(rgb[...,:3], [0.2989, 0.5870, 0.1140]).astype('float16')
     return np.dot(rgb[..., :3], [3, 6, 1]).astype('int16')
 
 
@@ -34,13 +33,12 @@ path = r'asl_alphabet_train/asl_alphabet_train/'
 types = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V',
          'W', 'X', 'Y', 'Z', 'space', 'del', 'nothing']
 
-for i in range(len(types) - 14):
+for i in range(len(types)):
     file_list = os.listdir(path + types[i])
     for file in file_list:
         img = mpimg.imread(path + types[i] + '/' + file)
-        # gray = rgb2gray(img)
-        # images.append(gray)
-        images.append(img)
+        gray = rgb2gray(img)
+        images.append(gray)
         label = np.zeros(29)
         label[i] = 1
         labels.append(label)
@@ -51,7 +49,7 @@ labels = np.array(labels)
 trainInds, valInds, testInds = trainValTest(len(labels), 0.8, 0.1)
 
 XTrain = images[trainInds]
-# XTrain = brighten(XTrain)
+XTrain = brighten(XTrain)
 yTrain = labels[trainInds]
 
 XVal = images[valInds]
@@ -60,11 +58,8 @@ yVal = labels[valInds]
 XTest = images[testInds]
 yTest = images[testInds]
 
-# plt.imshow(XTrain[0], cmap=plt.get_cmap('gray'), vmin = 0, vmax = 2550)
-# plt.show()
-
 net = tf.keras.models.Sequential([
-    tf.keras.layers.Conv2D(3, 5, padding='same', activation='relu', input_shape=(200, 200, 3)),
+    tf.keras.layers.Conv2D(3, 5, padding='same', activation='relu', input_shape=(200, 200, 1)),
     tf.keras.layers.MaxPool2D((2, 2)),
     tf.keras.layers.Conv2D(5, 3, padding='same', activation='relu'),
     tf.keras.layers.MaxPool2D((2, 2)),
@@ -80,4 +75,4 @@ net.summary()
 
 net.compile(loss='categorical_crossentropy', optimizer='adam', metrics=['accuracy'])
 
-net.fit(XTrain, yTrain, epochs=20, batch_size=300, validation_data=(XVal, yVal))
+net.fit(XTrain, yTrain, epochs=100, batch_size=300, validation_data=(XVal, yVal))
