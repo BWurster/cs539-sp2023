@@ -75,4 +75,18 @@ net.summary()
 
 net.compile(loss='categorical_crossentropy', optimizer='adam', metrics=['accuracy'])
 
-net.fit(XTrain, yTrain, epochs=100, batch_size=300, validation_data=(XVal, yVal))
+checkpointFile = r'SavedModels/ModelWeightsFileName'
+
+modelCheckpointCallback = tf.keras.callbacks.ModelCheckpoint(
+    filepath=checkpointFile,
+    monitor='val_accuracy',
+    verbose=1,
+    mode='max',
+    save_best_only=True,
+    save_weights_only=True)
+
+net.fit(XTrain, yTrain, epochs=100, batch_size=300, validation_data=(XVal, yVal), callbacks=[modelCheckpointCallback])
+
+score = net.evaluate(XTest, yTest, verbose=0)
+print("Test loss:", format(score[0],".4f"))
+print("Test accuracy:", format(score[1],".5f"))
