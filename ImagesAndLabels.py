@@ -1,9 +1,7 @@
 import matplotlib.image as mpimg
-import matplotlib.pyplot as plt
 import numpy as np
 import os
 import tensorflow as tf
-from tensorflow import keras
 
 
 def rgb2gray(rgb):
@@ -24,6 +22,8 @@ def trainValTest(length, trainPer, valPer):
     testIndices = indices[int((trainPer + valPer)*length):]
     return trainIndices, valIndices, testIndices
 
+
+np.random.seed(0)
 
 images = []
 labels = []
@@ -56,7 +56,7 @@ XVal = images[valInds]
 yVal = labels[valInds]
 
 XTest = images[testInds]
-yTest = images[testInds]
+yTest = labels[testInds]
 
 net = tf.keras.models.Sequential([
     tf.keras.layers.Conv2D(3, 5, padding='same', activation='relu', input_shape=(200, 200, 1)),
@@ -75,7 +75,7 @@ net.summary()
 
 net.compile(loss='categorical_crossentropy', optimizer='adam', metrics=['accuracy'])
 
-checkpointFile = r'SavedModels/ModelWeightsFileName'
+checkpointFile = r'SavedModels/ChangingBatchSizes'
 
 modelCheckpointCallback = tf.keras.callbacks.ModelCheckpoint(
     filepath=checkpointFile,
@@ -85,8 +85,8 @@ modelCheckpointCallback = tf.keras.callbacks.ModelCheckpoint(
     save_best_only=True,
     save_weights_only=True)
 
-net.fit(XTrain, yTrain, epochs=100, batch_size=300, validation_data=(XVal, yVal), callbacks=[modelCheckpointCallback])
+net.fit(XTrain, yTrain, epochs=30, batch_size=50, validation_data=(XVal, yVal), callbacks=[modelCheckpointCallback])
 
-score = net.evaluate(XTest, yTest, verbose=0)
-print("Test loss:", format(score[0],".4f"))
-print("Test accuracy:", format(score[1],".5f"))
+net.fit(XTrain, yTrain, epochs=30, batch_size=300, validation_data=(XVal, yVal), callbacks=[modelCheckpointCallback])
+
+net.fit(XTrain, yTrain, epochs=60, batch_size=600, validation_data=(XVal, yVal), callbacks=[modelCheckpointCallback])
