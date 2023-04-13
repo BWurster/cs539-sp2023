@@ -1,3 +1,4 @@
+# Everything in this file is identical to the training file up until the end when testing is done.
 import matplotlib.image as mpimg
 import matplotlib.pyplot as plt
 import numpy as np
@@ -78,16 +79,20 @@ net.compile(loss='categorical_crossentropy', optimizer='adam', metrics=['accurac
 
 checkpointFile = r'SavedModels/ChangingBatchSizes'
 
+# Instead of training, we load in the pre trained model weights.
 net.load_weights(checkpointFile)
 
+# This gives the validation set accuracy.
 score = net.evaluate(XVal, yVal, verbose=0)
 print("Validation loss:", format(score[0],".4f"))
 print("Validation accuracy:", format(score[1],".5f"))
 
+# This gives the test set accuracy.
 score = net.evaluate(XTest, yTest, verbose=0)
 print("Test loss:", format(score[0],".4f"))
 print("Test accuracy:", format(score[1],".5f"))
 
+# This is all code from class to produce confusion matrices.
 yClassified = np.argmax(net.predict(XTest), axis=1)
 yTrue = np.argmax(yTest, axis=1)
 print("Confusion matrix: \n", confusion_matrix(yTrue, yClassified))
