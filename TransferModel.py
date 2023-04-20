@@ -34,7 +34,7 @@ top_model.load_weights(checkpointFile)
 
 # This is the bottom layers (the predefined stuff)
 bottom_input = tf.keras.Input(shape=(TARGET_SIZE + (3,)))
-x = preprocess_input(inputs)
+x = preprocess_input(bottom_input)
 x = base_model(x)
 x = pooling_average_layer(x)
 bottom_output = flatten_layer(x)

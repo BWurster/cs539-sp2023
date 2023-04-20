@@ -8,8 +8,8 @@ import os
 # make type the classifier for the letter; this will be used to put things in
 # the right folder.
 DATA_PATH = os.path.join("data", "asl_alphabet_train", "asl_alphabet_train")
-BASE_FILE_NAME = "Ben_4-14"
-TYPE = 'E'
+BASE_FILE_NAME = "Ben_4-18"
+TYPE = 'O'
 
 # set up video capture object
 vid = cv2.VideoCapture(0)
