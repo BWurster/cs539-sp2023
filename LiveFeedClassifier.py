@@ -38,7 +38,6 @@ bottom_output = flatten_layer(x)
 bottom_model = tf.keras.Model(bottom_input, bottom_output)
   
 while(True):
-      
     # Capture the video frame
     # by frame
     ret, frame = vid.read()

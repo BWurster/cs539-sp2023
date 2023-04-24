@@ -5,8 +5,6 @@ import numpy as np
 import time
 import tensorflow as tf
 from tensorflow import keras
-from mediapipe.tasks import python
-from mediapipe.tasks.python import vision
 import mediapipe as mp
 
 types = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V',
@@ -15,9 +13,8 @@ types = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', '
 # define a video capture object
 vid = cv2.VideoCapture(0)
 
-base_options = python.BaseOptions(model_asset_path='hand_landmarker.task')
-options = vision.HandLandmarkerOptions(base_options=base_options)
-detector = vision.HandLandmarker.create_from_options(options)
+mpHands = mp.solutions.hands
+hands = mpHands.Hands()
 
 net = tf.keras.models.Sequential([
     tf.keras.layers.Dense(70, activation='relu', input_dim=64),
@@ -26,7 +23,7 @@ net = tf.keras.models.Sequential([
 
 net.compile(loss='categorical_crossentropy', optimizer='adam', metrics=['accuracy'])
 
-checkpointFile = r'SavedModels/JointDetection'
+checkpointFile = r'JointDetection'
 
 net.load_weights(checkpointFile)
 
@@ -61,25 +58,24 @@ while frame_number > 0:
     # Display the resulting frame
     cv2.imshow('frame', frame)
 
-    img = tf.image.resize(frame, (200, 200))
-    numpy_image = tf.cast(img, dtype=tf.uint8).numpy().astype(np.uint8)
-    image = mp.Image(image_format=mp.ImageFormat.SRGB, data=numpy_image)
-    detection_result = detector.detect(image)
+    imageRGB = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+    results = hands.process(imageRGB)
+
     this_input = []
-
-    if len(detection_result.handedness) == 0:
-        continue
-
-    if detection_result.handedness[0][0].category_name == 'Left':
-        this_input.append(-1.0)
+    # checking whether a hand is detected
+    if results.multi_hand_landmarks:
+        handedness = results.multi_handedness[0].classification[0].label
+        if handedness == 'Left':
+            this_input.append(-1.0)
+        else:
+            this_input.append(1.0)
+    
+        for id, lm in enumerate(results.multi_hand_landmarks[0].landmark):
+            this_input.append(lm.x)
+            this_input.append(lm.y)
+            this_input.append(lm.z)
     else:
-        this_input.append(1.0)
-
-    # There are 21 total joint locations that get recorded.
-    for joint in range(21):
-        this_input.append(detection_result.hand_landmarks[0][joint].x)
-        this_input.append(detection_result.hand_landmarks[0][joint].y)
-        this_input.append(detection_result.hand_landmarks[0][joint].z)
+        continue
 
     this_input = np.array(this_input)
     this_input = np.array([this_input])
