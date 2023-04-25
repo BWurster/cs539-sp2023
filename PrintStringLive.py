@@ -27,24 +27,20 @@ checkpointFile = r'JointDetection'
 
 net.load_weights(checkpointFile)
 
-frame_number = 1
-
 streak = 0
 previous_result = ''
-Full_string = ''
+full_string = ''
+active_result = ''
+active_count = 0
+CONFIDENCE_THRESHOLD = 10
 
-while frame_number > 0:
+while True:
 
     # the 'q' button is set as the
     # quitting button you may use any
     # desired button of your choice
     if cv2.waitKey(1) & 0xFF == ord('q'):
         break
-
-    frame_number += 1
-
-    if frame_number % 10 != 0:
-        continue
 
     # Capture the video frame
     # by frame
@@ -74,33 +70,34 @@ while frame_number > 0:
             this_input.append(lm.x)
             this_input.append(lm.y)
             this_input.append(lm.z)
+
+        this_input = np.array(this_input)
+        this_input = np.array([this_input])
+
+        res = net.predict(this_input, verbose=0)
+        maxi = np.argmax(res)
+        result = types[maxi]
     else:
-        continue
+        result = "Nothing"
 
-    this_input = np.array(this_input)
-    this_input = np.array([this_input])
+    if(result == active_result and result != previous_result):
+        if active_count > CONFIDENCE_THRESHOLD:
+            previous_result = active_result
 
-    res = net.predict(this_input, verbose=0)
-    maxi = np.argmax(res)
-    result = types[maxi]
-    if (previous_result == '') & (result != 'Nothing'):
-        previous_result = result
-    if result != 'Nothing':
-        if result == previous_result:
-            streak += 1
-            if streak == 8:
+            if result != 'Nothing':
                 if result == 'Del':
-                    if len(Full_string) >= 1:
-                        Full_string = Full_string[:-1]
+                    if len(full_string) >= 1:
+                        full_string = full_string[:-1]
                 elif result == 'Space':
-                    Full_string = Full_string + ' '
+                    full_string = full_string + ' '
                 else:
-                    Full_string = Full_string + result
-                print(Full_string)
-                streak = 0
+                    full_string = full_string + result
+                print(full_string + (' '*80), end='\r')
         else:
-            streak = 0
-            previous_result = result
+            active_count += 1
+    else:
+        active_result = result
+        active_count = 0
 
 # After the loop release the cap object
 vid.release()
