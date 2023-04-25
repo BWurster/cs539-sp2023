@@ -92,7 +92,7 @@ while True:
                     full_string = full_string + ' '
                 else:
                     full_string = full_string + result
-                print(full_string + (' '*80), end='\r')
+                print(">" + full_string + "<" + (' '*80), end='\r')
         else:
             active_count += 1
     else:
