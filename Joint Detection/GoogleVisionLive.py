@@ -8,7 +8,7 @@ from tensorflow import keras
 import mediapipe as mp
 
 types = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V',
-         'W', 'X', 'Y', 'Z', 'Space', 'Del', 'nothing']
+         'W', 'X', 'Y', 'Z', 'space', 'del', 'nothing']
 
 # define a video capture object
 vid = cv2.VideoCapture(0)

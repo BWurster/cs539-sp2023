@@ -1,14 +1,12 @@
 import mediapipe as mp
 import matplotlib.image as mpimg
 import matplotlib.pyplot as plt
-import numpy
-from mediapipe.tasks import python
-from mediapipe.tasks.python import vision
 import numpy as np
 import tensorflow as tf
 import os
 from sklearn.metrics import confusion_matrix
 import seaborn as sn
+import cv2
 
 
 def trainValTest(length, trainPer, valPer):
@@ -20,9 +18,8 @@ def trainValTest(length, trainPer, valPer):
     return trainIndices, valIndices, testIndices
 
 
-base_options = python.BaseOptions(model_asset_path='hand_landmarker.task')
-options = vision.HandLandmarkerOptions(base_options=base_options)
-detector = vision.HandLandmarker.create_from_options(options)
+mpHands = mp.solutions.hands
+hands = mpHands.Hands()
 
 # Repeatable testing set.
 np.random.seed(0)
@@ -34,36 +31,33 @@ noHand = np.zeros(29)
 path = r'../data/asl_alphabet_train/asl_alphabet_train/'
 
 types = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V',
-         'W', 'X', 'Y', 'Z', 'Space', 'Del', 'Nothing']
+         'W', 'X', 'Y', 'Z', 'space', 'del', 'nothing']
 
 for i in range(len(types)):
     # Lists all the files with the desired letter.
     file_list = os.listdir(path + types[i])
     for file in file_list:
         # Image is read in as a numpy array.
-        img = mpimg.imread(path + types[i] + '/' + file)
-        numpy_image = np.array(img).astype(numpy.uint8)
-        # Image is converted into format that can be used for hand detection.
-        image = mp.Image(image_format=mp.ImageFormat.SRGB, data=numpy_image)
-        # Detection is run on the object.
-        detection_result = detector.detect(image)
+        img = cv2.imread(path + types[i] + '/' + file)
+
+        imageRGB = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
+        results = hands.process(imageRGB)
+
         this_input = []
-        # Nothing will just be characterized by no hand being detected.
-        # The data format is different though, so it can't be trained.
-        if len(detection_result.handedness) == 0:
-            noHand[i] += 1
-            continue
+        # checking whether a hand is detected
+        if results.multi_hand_landmarks:
+            handedness = results.multi_handedness[0].classification[0].label
+            if handedness == 'Left':
+                this_input.append(-1.0)
+            else:
+                this_input.append(1.0)
 
-        if detection_result.handedness[0][0].category_name == 'Left':
-            this_input.append(-1.0)
+            for id, lm in enumerate(results.multi_hand_landmarks[0].landmark):
+                this_input.append(lm.x)
+                this_input.append(lm.y)
+                this_input.append(lm.z)
         else:
-            this_input.append(1.0)
-
-        # There are 21 total joint locations that get recorded.
-        for joint in range(21):
-            this_input.append(detection_result.hand_landmarks[0][joint].x)
-            this_input.append(detection_result.hand_landmarks[0][joint].y)
-            this_input.append(detection_result.hand_landmarks[0][joint].z)
+            continue
 
         # This stores the input.
         inputs.append(np.array(this_input))

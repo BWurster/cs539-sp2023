@@ -8,7 +8,7 @@ from tensorflow import keras
 import mediapipe as mp
 
 types = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V',
-         'W', 'X', 'Y', 'Z', 'Space', 'Del', 'Nothing']
+         'W', 'X', 'Y', 'Z', 'space', 'del', 'nothing']
 
 # define a video capture object
 vid = cv2.VideoCapture(0)
@@ -78,17 +78,17 @@ while True:
         maxi = np.argmax(res)
         result = types[maxi]
     else:
-        result = "Nothing"
+        result = "nothing"
 
     if(result == active_result and result != previous_result):
         if active_count > CONFIDENCE_THRESHOLD:
             previous_result = active_result
 
-            if result != 'Nothing':
-                if result == 'Del':
+            if result != 'nothing':
+                if result == 'del':
                     if len(full_string) >= 1:
                         full_string = full_string[:-1]
-                elif result == 'Space':
+                elif result == 'space':
                     full_string = full_string + ' '
                 else:
                     full_string = full_string + result
