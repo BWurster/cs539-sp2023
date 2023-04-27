@@ -31,7 +31,7 @@ inputs = []
 labels = []
 noHand = np.zeros(29)
 
-path = r'data_Kyle/asl_alphabet_train/asl_alphabet_train/'
+path = r'../data/asl_alphabet_train/asl_alphabet_train/'
 
 types = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V',
          'W', 'X', 'Y', 'Z', 'Space', 'Del', 'Nothing']
