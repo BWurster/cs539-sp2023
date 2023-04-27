@@ -3,6 +3,8 @@ import matplotlib.pyplot as plt
 import numpy as np
 import os
 import tensorflow as tf
+from sklearn.metrics import confusion_matrix
+import seaborn as sn
 
 
 def trainValTest(length, trainPer, valPer):
@@ -21,7 +23,7 @@ TARGET_SIZE = (224, 224)
 images = []
 labels = []
 
-path = r'data_Kyle/asl_alphabet_train/asl_alphabet_train/'
+path = r'../data/asl_alphabet_train/asl_alphabet_train/'
 
 types = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V',
          'W', 'X', 'Y', 'Z', 'Space', 'Del', 'Nothing']
@@ -43,7 +45,6 @@ pooling_average_layer = tf.keras.layers.AveragePooling2D(pool_size=7)
 
 flatten_layer = tf.keras.layers.Flatten()
 
-# This reads the data through all of the constant layers so that feed forward steps are quicker down the line.
 for i in range(len(types)):
     file_list = os.listdir(path + types[i])
     for file in file_list:
@@ -79,7 +80,6 @@ prediction_layer = tf.keras.layers.Dense(29, activation='softmax')
 
 BASE_OUTPUT_SIZE = (1, 512)
 
-# This is the top layer which actually makes predictions.
 inputs = tf.keras.Input(shape=BASE_OUTPUT_SIZE)
 x = flatten_layer(inputs)
 outputs = prediction_layer(x)
@@ -87,20 +87,42 @@ model = tf.keras.Model(inputs, outputs)
 
 model.compile(loss='categorical_crossentropy', optimizer='adam', metrics=['accuracy'])
 
-checkpointFile = r'SavedModels/TransferVGG16'
+checkpointFile = r'TransferVGG16'
 
-modelCheckpointCallback = tf.keras.callbacks.ModelCheckpoint(
-    filepath=checkpointFile,
-    monitor='val_accuracy',
-    verbose=1,
-    mode='max',
-    save_best_only=True,
-    save_weights_only=True)
+model.load_weights(checkpointFile)
 
 model.summary()
 
-model.fit(XTrain, yTrain, epochs=30, batch_size=50, validation_data=(XVal, yVal), callbacks=[modelCheckpointCallback])
+score = model.evaluate(XVal, yVal, verbose=0)
+print("Validation loss:", format(score[0],".4f"))
+print("Validation accuracy:", format(score[1],".5f"))
 
-model.fit(XTrain, yTrain, epochs=30, batch_size=300, validation_data=(XVal, yVal), callbacks=[modelCheckpointCallback])
+score = model.evaluate(XTest, yTest, verbose=0)
+print("Test loss:", format(score[0],".4f"))
+print("Test accuracy:", format(score[1],".5f"))
 
-model.fit(XTrain, yTrain, epochs=60, batch_size=600, validation_data=(XVal, yVal), callbacks=[modelCheckpointCallback])
+yClassified = np.argmax(model.predict(XTest), axis=1)
+yTrue = np.argmax(yTest, axis=1)
+print("Confusion matrix: \n", confusion_matrix(yTrue, yClassified))
+
+
+def plot_confusion_matrix(yClassified, yTrue):
+    # Compute confusion matrix
+    c_mat = np.zeros((yTest.shape[1],yTest.shape[1]))
+    for i in range(len(yTrue)):
+        c_mat[yClassified[i], yTrue[i] ] += 1
+
+    group_counts = ["{0:0.0f}".format(value) for value in c_mat.flatten()]
+    group_percentages = ["{0:.2%}".format(value) for value in c_mat.flatten()/np.sum(c_mat)]
+    labels = [f"{v1}\n{v2}" for v1, v2 in zip(group_counts, group_percentages)]
+    labels = np.asarray(labels).reshape(c_mat.shape[0], c_mat.shape[1])
+
+    plt.figure(figsize=(12,10))
+    sn.heatmap(c_mat, annot=labels, fmt='', cmap='rocket_r')
+    plt.title("Confusion Matrix")
+    plt.ylabel('Output Class')
+    plt.xlabel('Target Class')
+    plt.show()
+
+
+plot_confusion_matrix(yClassified, yTrue)
