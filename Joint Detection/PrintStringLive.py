@@ -23,7 +23,7 @@ net = tf.keras.models.Sequential([
 
 net.compile(loss='categorical_crossentropy', optimizer='adam', metrics=['accuracy'])
 
-checkpointFile = r'JointDetection'
+checkpointFile = r'MediaPipe'
 
 net.load_weights(checkpointFile)
 
