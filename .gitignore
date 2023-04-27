@@ -1,4 +1,5 @@
 venv/
-data/
+data/asl_alphabet_test/
+data/asl_alphabet_train/
 .ipynb_checkpoints/
 
