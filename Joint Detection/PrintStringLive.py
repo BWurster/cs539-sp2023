@@ -23,7 +23,7 @@ net = tf.keras.models.Sequential([
 
 net.compile(loss='categorical_crossentropy', optimizer='adam', metrics=['accuracy'])
 
-checkpointFile = r'MediaPipe'
+checkpointFile = r'JointDetection'
 
 net.load_weights(checkpointFile)
 
@@ -92,7 +92,8 @@ while True:
                     full_string = full_string + ' '
                 else:
                     full_string = full_string + result
-                print(">" + full_string + "<" + (' '*80), end='\r')
+                print('\x1b[2K', end='')
+                print(">" + full_string + "<", end='\r')
         else:
             active_count += 1
     else:
